@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import * as React from 'react';
 import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
-import { NMCLandingPage } from '../components/NMCLandingPage';
+import { NMCLandingPage } from '../components/NMCLandingPage.tsx';
 
 export default function App() {
   const router = useRouter();
