@@ -207,25 +207,41 @@ class CpdService {
    *  - targetHours: The required hours from configuration
    */
   getStatistics() {
+    // Calculate total hours across all logs using reduce
+    // Initial value of 0 handles empty logs array edge case
     const totalHours = this.logs.reduce((sum, log) => sum + log.hours, 0);
+    
+    // Simple count of all activities
     const totalActivities = this.logs.length;
+    
+    // Count logs created through voice input
+    // Used for analytics and feature usage tracking
     const voiceGeneratedCount = this.logs.filter(log => log.isVoiceGenerated).length;
     
+    // Build a breakdown of hours by category
+    // Creates an object with categories as keys and total hours as values
+    // The || 0 handles the case when a category is encountered for the first time
     const categoryBreakdown = this.logs.reduce((acc, log) => {
       acc[log.category] = (acc[log.category] || 0) + log.hours;
       return acc;
     }, {} as Record<string, number>);
 
+    // Calculate progress percentage but cap at 100%
+    // Prevents progress bar from exceeding container bounds
+    // Division by zero is handled implicitly (will result in 0%)
     const progressPercentage = Math.min(
       (totalHours / REVALIDATION_REQUIREMENTS.targetHours) * 100, 
       100
     );
 
+    // Calculate remaining hours but ensure it never goes below zero
+    // Prevents negative values when user exceeds target hours
     const remainingHours = Math.max(
       REVALIDATION_REQUIREMENTS.targetHours - totalHours, 
       0
     );
 
+    // Return a comprehensive statistics object with all calculated metrics
     return {
       totalHours,
       totalActivities,
@@ -270,12 +286,24 @@ class CpdService {
    * @returns {Promise<string>} JSON string containing all CPD data
    */
   async exportData(): Promise<string> {
+    // Create an export object with metadata and logs
+    // This structure allows for future expansion of export data
     const exportData = {
+      // Include timestamp to track when the export was created
+      // ISO format ensures consistent date formatting across platforms
       exportDate: new Date().toISOString(),
+      
+      // Include pre-calculated statistics for convenience
+      // This saves the importing application from having to recalculate
       statistics: this.getStatistics(),
+      
+      // Include the complete logs array
+      // Using the raw logs ensures no data is lost in the export
       logs: this.logs,
     };
     
+    // Convert to JSON with pretty-printing (2-space indentation)
+    // Pretty-printing makes the exported JSON human-readable
     return JSON.stringify(exportData, null, 2);
   }
 
@@ -289,14 +317,32 @@ class CpdService {
    */
   async importData(data: string): Promise<void> {
     try {
+      // Parse the JSON string into a JavaScript object
+      // This will throw if the JSON is malformed
       const parsed = JSON.parse(data);
+      
+      // Validate that the parsed data has a logs array
+      // This ensures we're importing valid CPD data
       if (parsed.logs && Array.isArray(parsed.logs)) {
+        // Replace the current logs with the imported ones
+        // This is a complete replacement, not a merge
         this.logs = parsed.logs;
+        
+        // Persist the imported logs to storage
         await this.saveLogs();
+        
+        // Notify all subscribers about the data change
+        // This updates any UI components displaying the logs
         this.notifyListeners();
       }
+      // Note: If parsed.logs doesn't exist or isn't an array,
+      // we silently do nothing rather than throwing an error
     } catch (error) {
+      // Log the original error for debugging
       console.error('Error importing CPD data:', error);
+      
+      // Throw a more user-friendly error
+      // This abstracts away the technical details of the failure
       throw new Error('Invalid import data format');
     }
   }
