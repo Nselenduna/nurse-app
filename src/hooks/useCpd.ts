@@ -6,6 +6,9 @@ import { CpdCategory, CpdLog } from '../types';
  * Custom hook for accessing and managing CPD logs
  * Provides reactive state and methods for interacting with the CpdService
  * 
+ * NOTE: Consider using useCpdV2 instead which addresses race conditions and memory leaks
+ * See detailed documentation: /docs/hooks/usecpd.md
+ * 
  * @returns {Object} Object containing:
  *  - logs: Array of CPD logs
  *  - loading: Boolean indicating if an operation is in progress

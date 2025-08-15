@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { APP_COLORS, CPD_CATEGORIES } from '../constants';
 import { CpdCategory } from '../types';
-import { CPD_CATEGORIES, APP_COLORS } from '../constants';
 
 /**
  * Props for the CategorySelector component

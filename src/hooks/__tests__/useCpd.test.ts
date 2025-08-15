@@ -1,6 +1,6 @@
-import { renderHook, act } from '@testing-library/react-hooks';
-import { useCpd } from '../useCpd';
+import { act, renderHook } from '@testing-library/react-hooks';
 import CpdService from '../../services/CpdService';
+import { useCpd } from '../useCpd';
 
 // Mock the CpdService
 jest.mock('../../services/CpdService', () => ({

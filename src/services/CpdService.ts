@@ -1,5 +1,6 @@
 import { REVALIDATION_REQUIREMENTS, STORAGE_KEYS } from '../constants';
 import { CpdCategory, CpdLog } from '../types';
+import AuditLogService from './AuditLogService';
 import StorageService from './StorageService';
 
 /**
@@ -284,27 +285,55 @@ class CpdService {
    * Includes logs, statistics, and export date
    * 
    * @returns {Promise<string>} JSON string containing all CPD data
+   * @throws Will throw an error if export fails
    */
   async exportData(): Promise<string> {
-    // Create an export object with metadata and logs
-    // This structure allows for future expansion of export data
-    const exportData = {
-      // Include timestamp to track when the export was created
-      // ISO format ensures consistent date formatting across platforms
-      exportDate: new Date().toISOString(),
+    try {
+      // Create an export object with metadata and logs
+      // This structure allows for future expansion of export data
+      const exportData = {
+        // Include timestamp to track when the export was created
+        // ISO format ensures consistent date formatting across platforms
+        exportDate: new Date().toISOString(),
+        
+        // Include pre-calculated statistics for convenience
+        // This saves the importing application from having to recalculate
+        statistics: this.getStatistics(),
+        
+        // Include the complete logs array
+        // Using the raw logs ensures no data is lost in the export
+        logs: this.logs,
+      };
       
-      // Include pre-calculated statistics for convenience
-      // This saves the importing application from having to recalculate
-      statistics: this.getStatistics(),
+      // Convert to JSON with pretty-printing (2-space indentation)
+      // Pretty-printing makes the exported JSON human-readable
+      const jsonData = JSON.stringify(exportData, null, 2);
       
-      // Include the complete logs array
-      // Using the raw logs ensures no data is lost in the export
-      logs: this.logs,
-    };
-    
-    // Convert to JSON with pretty-printing (2-space indentation)
-    // Pretty-printing makes the exported JSON human-readable
-    return JSON.stringify(exportData, null, 2);
+      // Log successful export
+      await AuditLogService.logSuccess(
+        'export_data',
+        {
+          format: 'json',
+          logCount: this.logs.length,
+          dataSize: jsonData.length,
+        }
+      );
+      
+      return jsonData;
+    } catch (error) {
+      // Log export failure
+      await AuditLogService.logFailure(
+        'export_data',
+        {
+          format: 'json',
+          logCount: this.logs.length,
+        },
+        error instanceof Error ? error.message : 'Unknown error during export'
+      );
+      
+      // Re-throw the error
+      throw error;
+    }
   }
 
   /**
@@ -316,6 +345,9 @@ class CpdService {
    * @throws Will throw an error if data format is invalid or saving fails
    */
   async importData(data: string): Promise<void> {
+    // Store original logs for rollback in case of failure
+    const originalLogs = [...this.logs];
+    
     try {
       // Parse the JSON string into a JavaScript object
       // This will throw if the JSON is malformed
@@ -334,10 +366,34 @@ class CpdService {
         // Notify all subscribers about the data change
         // This updates any UI components displaying the logs
         this.notifyListeners();
+        
+        // Log successful import
+        await AuditLogService.logSuccess(
+          'import_data',
+          {
+            logCount: parsed.logs.length,
+            importDate: parsed.exportDate || 'unknown',
+          }
+        );
+      } else {
+        // Log warning for invalid structure but don't throw
+        await AuditLogService.logFailure(
+          'import_data',
+          { dataSize: data.length },
+          'Invalid data structure: missing logs array'
+        );
       }
-      // Note: If parsed.logs doesn't exist or isn't an array,
-      // we silently do nothing rather than throwing an error
     } catch (error) {
+      // Rollback to original logs
+      this.logs = originalLogs;
+      
+      // Log the import failure
+      await AuditLogService.logFailure(
+        'import_data',
+        { dataSize: data.length },
+        error instanceof Error ? error.message : 'Unknown error during import'
+      );
+      
       // Log the original error for debugging
       console.error('Error importing CPD data:', error);
       
@@ -354,9 +410,28 @@ class CpdService {
    * @throws Will throw an error if saving fails
    */
   async clearAll(): Promise<void> {
-    this.logs = [];
-    await this.saveLogs();
-    this.notifyListeners();
+    try {
+      const logCount = this.logs.length;
+      this.logs = [];
+      await this.saveLogs();
+      this.notifyListeners();
+      
+      // Log successful clear operation
+      await AuditLogService.logSuccess(
+        'clear_logs',
+        { logCount }
+      );
+    } catch (error) {
+      // Log failure
+      await AuditLogService.logFailure(
+        'clear_logs',
+        {},
+        error instanceof Error ? error.message : 'Unknown error during clear operation'
+      );
+      
+      // Re-throw the error
+      throw error;
+    }
   }
 }
 

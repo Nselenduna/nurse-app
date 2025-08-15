@@ -1,7 +1,7 @@
-import React from 'react';
 import { render } from '@testing-library/react-native';
-import CpdLogCard from '../CpdLogCard';
+import React from 'react';
 import CategorySelector from '../CategorySelector';
+import CpdLogCard from '../CpdLogCard';
 
 // Mock dependencies
 jest.mock('@expo/vector-icons', () => ({

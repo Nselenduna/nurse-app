@@ -1,0 +1,42 @@
+# Build outputs
+build/
+dist/
+coverage/
+
+# Node modules
+node_modules/
+
+# Generated files
+*.generated.*
+*.d.ts
+
+# Expo generated files
+.expo/
+web-build/
+android/
+ios/
+
+# Configuration files
+*.config.js
+*.config.ts
+metro.config.js
+
+# Package files
+package-lock.json
+yarn.lock
+
+# Markdown files (handled separately)
+*.md
+
+# Environment files
+.env*
+
+# Log files
+*.log
+
+# IDE files
+.idea/
+.vscode/
+
+# Other
+.DS_Store

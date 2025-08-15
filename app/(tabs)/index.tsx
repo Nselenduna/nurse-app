@@ -1,12 +1,14 @@
 import CpdLogCard from '@/src/components/CpdLogCard';
+import { ScreenLayout } from '@/src/components/layouts/ScreenLayout';
+import { DashboardEmptyState } from '@/src/components/ui/EmptyState';
 import { APP_COLORS, REVALIDATION_REQUIREMENTS } from '@/src/constants';
+import { STRINGS } from '@/src/constants/strings';
+import { UI_CONFIG } from '@/src/constants/ui';
 import { useCpd } from '@/src/hooks/useCpd';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import {
-    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -37,7 +39,7 @@ export default function DashboardScreen() {
       <TouchableOpacity style={styles.quickActionButton} onPress={onPress} activeOpacity={0.8}>
         <View style={[styles.quickActionIcon, { backgroundColor: color }]}>
           {/* Cast to any is needed because Ionicons types don't include all possible icon names */}
-          <Ionicons name={icon as any} size={24} color={APP_COLORS.white} />
+          <Ionicons name={icon as any} size={UI_CONFIG.iconSize.large} color={APP_COLORS.white} />
         </View>
         <View style={styles.quickActionText}>
           <Text style={styles.quickActionTitle}>{title}</Text>
@@ -162,128 +164,60 @@ export default function DashboardScreen() {
     // Only recalculate when categoryBreakdown changes
   }, [categoryBreakdown]);
 
-  // Memoize the EmptyState component that's shown when there are no logs
-  // This provides a helpful onboarding experience for new users
-  const EmptyState = useMemo(() => (
-    <View style={styles.emptyState}>
-      {/* Large icon to draw attention */}
-      <Ionicons name="add-circle-outline" size={64} color="rgba(255,255,255,0.5)" />
-      
-      {/* Clear, action-oriented heading */}
-      <Text style={styles.emptyTitle}>Start Your CPD Journey</Text>
-      
-      {/* Explanatory text to guide the user */}
-      <Text style={styles.emptySubtitle}>
-        Begin logging your professional development activities to track your revalidation progress
-      </Text>
-      
-      {/* Call-to-action button that navigates to the logging screen */}
-      <TouchableOpacity 
-        style={styles.ctaButton}
-        onPress={() => router.push('/(tabs)/log')}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.ctaButtonText}>Log First Activity</Text>
-      </TouchableOpacity>
-    </View>
-  ), [router]); // Only recreate when router changes
+
 
   return (
-    <View style={styles.container}>
-      {/* Background gradient that spans the entire screen */}
-      <LinearGradient
-        colors={[APP_COLORS.primary, APP_COLORS.secondary, APP_COLORS.accent]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.background}
-      />
+    <ScreenLayout
+      title={STRINGS.screens.dashboard.title}
+      subtitle={STRINGS.screens.dashboard.subtitle}
+    >
+      {/* Conditionally render dashboard sections */}
+      {/* Each section is a memoized component to optimize performance */}
+      {ProgressSection}
+      {QuickActionsSection}
+      {RecentActivitiesSection}
+      {CategoryOverviewSection}
       
-      {/* Main scrollable content area */}
-      <ScrollView 
-        style={styles.content} 
-        showsVerticalScrollIndicator={false} // Hide scrollbar for cleaner UI
-        contentContainerStyle={styles.contentContainer}
-      >
-        {/* Dashboard header */}
-        <Text style={styles.title}>Dashboard</Text>
-        <Text style={styles.subtitle}>Track your revalidation journey</Text>
-
-        {/* Conditionally render dashboard sections */}
-        {/* Each section is a memoized component to optimize performance */}
-        {ProgressSection}
-        {QuickActionsSection}
-        {RecentActivitiesSection}
-        {CategoryOverviewSection}
-        
-        {/* Show empty state only when there are no logs */}
-        {/* This is a conditional rendering pattern for handling empty states */}
-        {logs.length === 0 && EmptyState}
-      </ScrollView>
-    </View>
+      {/* Show empty state only when there are no logs */}
+      {logs.length === 0 && <DashboardEmptyState onAction={() => router.push('/(tabs)/log')} />}
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1 
-  },
-  background: { 
-    ...StyleSheet.absoluteFillObject 
-  },
-  content: { 
-    flex: 1, 
-    padding: 16 
-  },
-  contentContainer: {
-    paddingBottom: 24,
-  },
-  title: { 
-    fontSize: 28, 
-    fontWeight: '700', 
-    color: APP_COLORS.white, 
-    textAlign: 'center', 
-    marginTop: 24, 
-    marginBottom: 8 
-  },
-  subtitle: { 
-    fontSize: 16, 
-    color: APP_COLORS.textSecondary, 
-    textAlign: 'center', 
-    marginBottom: 24 
-  },
   
   // Progress Section
   progressContainer: { 
     backgroundColor: APP_COLORS.background, 
-    borderRadius: 16, 
-    padding: 20, 
-    marginBottom: 24 
+    borderRadius: UI_CONFIG.borderRadius.large, 
+    padding: UI_CONFIG.spacing.large, 
+    marginBottom: UI_CONFIG.spacing.large 
   },
   progressHeader: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
     alignItems: 'center', 
-    marginBottom: 16 
+    marginBottom: UI_CONFIG.spacing.medium
   },
   progressTitle: { 
     color: APP_COLORS.white, 
-    fontSize: 18, 
-    fontWeight: '600' 
+    fontSize: UI_CONFIG.fontSize.large, 
+    fontWeight: UI_CONFIG.fontWeight.semibold
   },
   progressTarget: { 
     color: APP_COLORS.textSecondary, 
-    fontSize: 14 
+    fontSize: UI_CONFIG.fontSize.small
   },
   progressBar: { 
     height: 8, 
     backgroundColor: 'rgba(255,255,255,0.2)', 
-    borderRadius: 4, 
-    marginBottom: 16 
+    borderRadius: UI_CONFIG.borderRadius.small / 2, 
+    marginBottom: UI_CONFIG.spacing.medium
   },
   progressFill: { 
     height: '100%', 
     backgroundColor: APP_COLORS.success, 
-    borderRadius: 4 
+    borderRadius: UI_CONFIG.borderRadius.small / 2
   },
   progressStats: { 
     flexDirection: 'row', 
@@ -294,34 +228,34 @@ const styles = StyleSheet.create({
   },
   progressNumber: { 
     color: APP_COLORS.info, 
-    fontSize: 20, 
-    fontWeight: '700' 
+    fontSize: UI_CONFIG.fontSize.xlarge, 
+    fontWeight: UI_CONFIG.fontWeight.bold
   },
   progressLabel: { 
     color: APP_COLORS.textSecondary, 
-    fontSize: 12, 
-    marginTop: 4 
+    fontSize: UI_CONFIG.fontSize.xsmall, 
+    marginTop: UI_CONFIG.spacing.xsmall
   },
 
   // Quick Actions
   quickActionsContainer: { 
-    marginBottom: 24 
+    marginBottom: UI_CONFIG.spacing.large 
   },
   sectionTitle: { 
     color: APP_COLORS.white, 
-    fontSize: 18, 
-    fontWeight: '600', 
-    marginBottom: 16 
+    fontSize: UI_CONFIG.fontSize.large, 
+    fontWeight: UI_CONFIG.fontWeight.semibold, 
+    marginBottom: UI_CONFIG.spacing.medium
   },
   quickActionsGrid: { 
-    gap: 12 
+    gap: UI_CONFIG.spacing.medium - 4 // 12px
   },
   quickActionButton: { 
     flexDirection: 'row', 
     alignItems: 'center', 
     backgroundColor: APP_COLORS.background, 
-    borderRadius: 12, 
-    padding: 16 
+    borderRadius: UI_CONFIG.borderRadius.medium, 
+    padding: UI_CONFIG.spacing.medium
   },
   quickActionIcon: { 
     width: 48, 
@@ -329,83 +263,49 @@ const styles = StyleSheet.create({
     borderRadius: 24, 
     alignItems: 'center', 
     justifyContent: 'center', 
-    marginRight: 16 
+    marginRight: UI_CONFIG.spacing.medium
   },
   quickActionText: { 
     flex: 1 
   },
   quickActionTitle: { 
     color: APP_COLORS.white, 
-    fontSize: 16, 
-    fontWeight: '600' 
+    fontSize: UI_CONFIG.fontSize.medium, 
+    fontWeight: UI_CONFIG.fontWeight.semibold
   },
   quickActionSubtitle: { 
     color: APP_COLORS.textSecondary, 
-    fontSize: 14, 
-    marginTop: 2 
+    fontSize: UI_CONFIG.fontSize.small, 
+    marginTop: UI_CONFIG.spacing.xsmall / 2 // 2px
   },
 
   // Recent Activities
   recentContainer: { 
-    marginBottom: 24 
+    marginBottom: UI_CONFIG.spacing.large 
   },
   activityCard: { 
-    marginBottom: 12 
+    marginBottom: UI_CONFIG.spacing.medium - 4 // 12px
   },
 
   // Category Overview
   categoryContainer: { 
-    marginBottom: 24 
+    marginBottom: UI_CONFIG.spacing.large 
   },
   categoryRow: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
-    paddingVertical: 12,
+    paddingVertical: UI_CONFIG.spacing.medium - 4, // 12px
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.1)'
   },
   categoryName: { 
     color: APP_COLORS.white, 
-    fontSize: 14 
+    fontSize: UI_CONFIG.fontSize.small 
   },
   categoryHours: { 
     color: APP_COLORS.success, 
-    fontSize: 14, 
-    fontWeight: '600' 
-  },
-
-  // Empty State
-  emptyState: { 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    paddingVertical: 40 
-  },
-  emptyTitle: { 
-    color: APP_COLORS.white, 
-    fontSize: 18, 
-    fontWeight: '600', 
-    marginTop: 16,
-    marginBottom: 8,
-    textAlign: 'center'
-  },
-  emptySubtitle: { 
-    color: APP_COLORS.textSecondary, 
-    textAlign: 'center',
-    fontSize: 14,
-    lineHeight: 20,
-    maxWidth: 280,
-    marginBottom: 24
-  },
-  ctaButton: { 
-    backgroundColor: APP_COLORS.white, 
-    paddingHorizontal: 24, 
-    paddingVertical: 12, 
-    borderRadius: 12 
-  },
-  ctaButtonText: { 
-    color: APP_COLORS.primary, 
-    fontWeight: '600', 
-    fontSize: 16 
+    fontSize: UI_CONFIG.fontSize.small, 
+    fontWeight: UI_CONFIG.fontWeight.semibold 
   },
 });
 

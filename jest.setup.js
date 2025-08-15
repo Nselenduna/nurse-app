@@ -1,8 +1,7 @@
 import '@testing-library/jest-native/extend-expect';
-import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
 
-// Mock AsyncStorage
-jest.mock('@react-native-async-storage/async-storage', () => mockAsyncStorage);
+// Mock AsyncStorage is automatically loaded from __mocks__/@react-native-async-storage/async-storage.js
+jest.mock('@react-native-async-storage/async-storage');
 
 // Mock Expo components
 jest.mock('expo-linear-gradient', () => 'LinearGradient');
