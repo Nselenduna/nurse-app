@@ -1,26 +1,48 @@
 {
   "expo": {
-    "name": "nurse-app",
+    "name": "NMC CPD Tracker",
     "slug": "nurse-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "nurse-app",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#4f46e5"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.nselenduna.nurseapp",
+      "buildNumber": "1",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+        "NSMicrophoneUsageDescription": "This app needs microphone access to record voice notes for CPD activities.",
+        "NSCameraUsageDescription": "This app needs camera access to capture images for CPD activities.",
+        "NSPhotoLibraryUsageDescription": "This app needs photo library access to select images for CPD activities.",
+        "UIBackgroundModes": [
+          "audio"
+        ],
+        "CFBundleDisplayName": "NMC CPD Tracker"
+      },
+      "appStoreUrl": "https://apps.apple.com/app/nmc-cpd-tracker/id1234567890"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#4f46e5"
       },
-      "edgeToEdgeEnabled": true,
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.nselenduna.nurseapp",
       "package": "com.nselenduna.nurseapp"
     },
     "web": {
@@ -31,12 +53,9 @@
     "plugins": [
       "expo-router",
       [
-        "expo-splash-screen",
+        "expo-av",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone to record voice notes for CPD activities."
         }
       ]
     ],
@@ -47,8 +66,8 @@
       "router": {},
       "eas": {
         "projectId": "60f14c8f-e1e0-4592-912b-f1bf68023dba"
-      }
-    },
-    "owner": "nselenduna"
+      },
+      "simulateProduction": true
+    }
   }
 }
