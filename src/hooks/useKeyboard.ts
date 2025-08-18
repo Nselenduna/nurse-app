@@ -17,10 +17,9 @@ export function useKeyboard() {
    * @param {KeyboardEvent} event - Keyboard event
    */
   const handleKeyboardShow = useCallback((event: KeyboardEvent) => {
-    const { height, duration } = event.endCoordinates;
-    setIsKeyboardVisible(true);
+    const { height } = event.endCoordinates;
     setKeyboardHeight(height);
-    setKeyboardAnimationDuration(duration);
+    setIsKeyboardVisible(true);
   }, []);
   
   /**
@@ -28,11 +27,9 @@ export function useKeyboard() {
    * 
    * @param {KeyboardEvent} event - Keyboard event
    */
-  const handleKeyboardHide = useCallback((event: KeyboardEvent) => {
-    const { duration } = event.endCoordinates;
+  const handleKeyboardHide = useCallback(() => {
     setIsKeyboardVisible(false);
     setKeyboardHeight(0);
-    setKeyboardAnimationDuration(duration);
   }, []);
   
   /**

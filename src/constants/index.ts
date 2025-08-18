@@ -1,4 +1,5 @@
 import { CpdCategory, NmcPillar } from '../types';
+export * from './config';
 
 export const APP_COLORS = {
   primary: '#4f46e5',

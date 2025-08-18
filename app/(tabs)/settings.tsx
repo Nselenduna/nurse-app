@@ -6,12 +6,13 @@ import { STRINGS } from '@/src/constants/strings';
 import { UI_CONFIG } from '@/src/constants/ui';
 import { useCpd } from '@/src/hooks/useCpd';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useCallback } from 'react';
 import {
-    Alert,
-    StyleSheet,
-    Text,
-    View
+  Alert,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 
 export default function SettingsScreen() {
@@ -73,7 +74,7 @@ export default function SettingsScreen() {
 
 
 
-  const StatisticsSection = useCallback(() => (
+  const StatisticsSection = () => (
     <Section title={STRINGS.sections.cpdSummary}>
       <View style={styles.statsGrid}>
         <View style={styles.statItem}>
@@ -94,9 +95,9 @@ export default function SettingsScreen() {
         </View>
       </View>
     </Section>
-  ), [statistics]);
+  );
 
-  const RequirementsSection = useCallback(() => (
+  const RequirementsSection = () => (
     <Section title={STRINGS.sections.requirements}>
       <View style={styles.requirementItem}>
         <Ionicons name="checkmark-circle" size={UI_CONFIG.iconSize.medium} color={APP_COLORS.success} />
@@ -126,14 +127,14 @@ export default function SettingsScreen() {
         </Text>
       </View>
     </Section>
-  ), []);
+  );
 
   return (
     <ScreenLayout
       title={STRINGS.screens.settings.title}
     >
-      {StatisticsSection}
-      {RequirementsSection}
+      {StatisticsSection()}
+      {RequirementsSection()}
       
       <Section title={STRINGS.sections.dataManagement}>
         <SettingsItem
@@ -170,6 +171,15 @@ export default function SettingsScreen() {
           <Text style={styles.infoLabel}>{STRINGS.labels.dataStorage}</Text>
           <Text style={styles.infoValue}>{STRINGS.labels.localOnly}</Text>
         </View>
+      </Section>
+
+      <Section title="Examples">
+        <SettingsItem
+          icon="flask-outline"
+          title="Production Mode Demo"
+          subtitle="See how the app runs in production mode"
+          onPress={() => router.push('/examples/production-mode')}
+        />
       </Section>
     </ScreenLayout>
   );

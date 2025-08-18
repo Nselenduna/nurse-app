@@ -31,7 +31,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
 }
 expoAutolinking.useExpoModules()
 
-rootProject.name = 'nurse-app'
+rootProject.name = 'NMC CPD Tracker'
 
 expoAutolinking.useExpoVersionCatalog()
 

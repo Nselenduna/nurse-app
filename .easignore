@@ -1,0 +1,31 @@
+# Exclude unnecessary files from EAS build
+node_modules/
+*.log
+coverage/
+dist/
+build/
+.vscode/
+.DS_Store
+.git/
+PRODUCTION_CHECKLIST.md
+scripts/
+app/examples/
+
+# Exclude native folders for prebuild projects
+android/
+ios/
+
+# Exclude problematic components and services
+src/components/ui/Button.tsx
+src/hooks/useFileUpload.ts
+src/hooks/useKeyboard.ts
+src/services/ErrorService.ts
+src/utils/fileUtils.ts
+src/utils/dateUtils.ts
+
+# Exclude all test files
+**/__tests__/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx

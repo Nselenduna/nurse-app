@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LoggingService from './LoggingService';
 
 /**
  * StorageService provides a singleton interface for managing persistent data storage
@@ -48,7 +49,7 @@ class StorageService {
       this.cache.set(key, parsed);
       return parsed;
     } catch (error) {
-      console.error(`Error reading from storage: ${key}`, error);
+      LoggingService.error(`Failed to read from storage: ${key}`, error, 'StorageService');
       return null;
     }
   }
@@ -67,7 +68,7 @@ class StorageService {
       await AsyncStorage.setItem(key, JSON.stringify(value));
       this.cache.set(key, value);
     } catch (error) {
-      console.error(`Error writing to storage: ${key}`, error);
+      LoggingService.error(`Failed to write to storage: ${key}`, error, 'StorageService');
       throw error;
     }
   }
@@ -84,7 +85,7 @@ class StorageService {
       await AsyncStorage.removeItem(key);
       this.cache.delete(key);
     } catch (error) {
-      console.error(`Error removing from storage: ${key}`, error);
+      LoggingService.error(`Failed to remove from storage: ${key}`, error, 'StorageService');
       throw error;
     }
   }
@@ -100,7 +101,7 @@ class StorageService {
       await AsyncStorage.clear();
       this.cache.clear();
     } catch (error) {
-      console.error('Error clearing storage', error);
+      LoggingService.error('Failed to clear storage', error, 'StorageService');
       throw error;
     }
   }
@@ -113,9 +114,10 @@ class StorageService {
    */
   async getAllKeys(): Promise<string[]> {
     try {
-      return await AsyncStorage.getAllKeys();
+      const keys = await AsyncStorage.getAllKeys();
+      return Array.from(keys); // Convert readonly array to mutable array
     } catch (error) {
-      console.error('Error getting all keys', error);
+      console.error('Error getting all keys:', error);
       return [];
     }
   }
@@ -127,16 +129,13 @@ class StorageService {
    * @returns {Promise<[string, any][]>} Array of [key, value] pairs
    * @throws Will not throw errors, returns empty array instead
    */
-  async multiGet(keys: string[]): Promise<[string, any][]> {
+  async multiGet(keys: string[]): Promise<[string, string | null][]> {
     try {
-      const values = await AsyncStorage.multiGet(keys);
-      return values.map(([key, value]) => [
-        key,
-        value ? JSON.parse(value) : null
-      ]);
+      const pairs = await AsyncStorage.multiGet(keys);
+      return Array.from(pairs); // Convert readonly array to mutable array
     } catch (error) {
-      console.error('Error in multiGet', error);
-      return [];
+      console.error('Error getting multiple values:', error);
+      return keys.map(key => [key, null]);
     }
   }
 
@@ -147,20 +146,13 @@ class StorageService {
    * @returns {Promise<void>}
    * @throws Will throw an error if batch storage fails
    */
-  async multiSet(keyValuePairs: [string, any][]): Promise<void> {
+  async multiSet(keyValuePairs: [string, string][]): Promise<void> {
     try {
-      const serializedPairs = keyValuePairs.map(([key, value]) => [
-        key,
-        JSON.stringify(value)
-      ]);
-      await AsyncStorage.multiSet(serializedPairs);
-      
-      // Update cache
-      keyValuePairs.forEach(([key, value]) => {
-        this.cache.set(key, value);
-      });
+      // Ensure each pair has exactly 2 elements
+      const validPairs = keyValuePairs.filter(pair => pair.length === 2) as [string, string][];
+      await AsyncStorage.multiSet(validPairs);
     } catch (error) {
-      console.error('Error in multiSet', error);
+      console.error('Error setting multiple values:', error);
       throw error;
     }
   }

@@ -1,199 +1,218 @@
 /**
- * Log level enum for controlling logging verbosity
+ * LoggingService provides structured logging with different levels
+ * and proper error handling for production environments
+ * 
+ * @class LoggingService
+ * @exports A singleton instance of LoggingService
  */
-export enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARN = 2,
-  ERROR = 3,
-}
+class LoggingService {
+  private static instance: LoggingService;
+  private isProduction: boolean;
 
-/**
- * Configuration for the logging service
- */
-interface LoggingConfig {
-  /**
-   * Minimum log level to display
-   * Logs with lower levels will be suppressed
-   */
-  minLevel: LogLevel;
-  
-  /**
-   * Whether to include timestamps in log messages
-   */
-  includeTimestamp: boolean;
-  
-  /**
-   * Whether to include the log level in log messages
-   */
-  includeLevel: boolean;
-  
-  /**
-   * Whether to include the context in log messages
-   */
-  includeContext: boolean;
-  
-  /**
-   * Whether to enable remote logging
-   */
-  enableRemoteLogging: boolean;
-}
-
-/**
- * Service for consistent logging throughout the application
- * Provides different log levels and formatting options
- */
-export class LoggingService {
-  /**
-   * Default configuration for production environment
-   */
-  private static readonly PRODUCTION_CONFIG: LoggingConfig = {
-    minLevel: LogLevel.WARN,
-    includeTimestamp: true,
-    includeLevel: true,
-    includeContext: true,
-    enableRemoteLogging: true,
-  };
-  
-  /**
-   * Default configuration for development environment
-   */
-  private static readonly DEV_CONFIG: LoggingConfig = {
-    minLevel: LogLevel.DEBUG,
-    includeTimestamp: true,
-    includeLevel: true,
-    includeContext: true,
-    enableRemoteLogging: false,
-  };
-  
-  /**
-   * Current configuration
-   */
-  private static config: LoggingConfig = 
-    process.env.NODE_ENV === 'production'
-      ? LoggingService.PRODUCTION_CONFIG
-      : LoggingService.DEV_CONFIG;
-  
-  /**
-   * Whether we are in a production environment
-   */
-  private static readonly isProduction = process.env.NODE_ENV === 'production';
-  
-  /**
-   * Configure the logging service
-   * 
-   * @param {Partial<LoggingConfig>} config - Configuration options
-   */
-  static configure(config: Partial<LoggingConfig>): void {
-    LoggingService.config = {
-      ...LoggingService.config,
-      ...config,
-    };
+  private constructor() {
+    // In production, this would be set via environment variables
+    this.isProduction = __DEV__ === false;
   }
-  
+
   /**
-   * Format a log message with optional context and timestamp
+   * Gets the singleton instance of the LoggingService
    * 
-   * @param {LogLevel} level - Log level
-   * @param {string} message - Log message
-   * @param {string} [context] - Optional context for the log
+   * @static
+   * @returns {LoggingService} The singleton instance
+   */
+  static getInstance(): LoggingService {
+    if (!LoggingService.instance) {
+      LoggingService.instance = new LoggingService();
+    }
+    return LoggingService.instance;
+  }
+
+  /**
+   * Logs debug information (only in development)
+   * 
+   * @param {string} message - The debug message
+   * @param {any} [data] - Optional data to log
+   * @param {string} [context] - Optional context (e.g., service name)
+   */
+  debug(message: string, data?: any, context?: string): void {
+    if (!this.isProduction) {
+      const logMessage = this.formatMessage('DEBUG', message, context);
+      console.log(logMessage, data || '');
+    }
+  }
+
+  /**
+   * Logs informational messages
+   * 
+   * @param {string} message - The info message
+   * @param {any} [data] - Optional data to log
+   * @param {string} [context] - Optional context (e.g., service name)
+   */
+  info(message: string, data?: any, context?: string): void {
+    const logMessage = this.formatMessage('INFO', message, context);
+    console.info(logMessage, data || '');
+  }
+
+  /**
+   * Logs warning messages
+   * 
+   * @param {string} message - The warning message
+   * @param {any} [data] - Optional data to log
+   * @param {string} [context] - Optional context (e.g., service name)
+   */
+  warn(message: string, data?: any, context?: string): void {
+    const logMessage = this.formatMessage('WARN', message, context);
+    console.warn(logMessage, data || '');
+  }
+
+  /**
+   * Logs error messages with sanitized data
+   * 
+   * @param {string} message - The error message
+   * @param {any} [error] - Optional error object
+   * @param {string} [context] - Optional context (e.g., service name)
+   */
+  error(message: string, error?: any, context?: string): void {
+    const logMessage = this.formatMessage('ERROR', message, context);
+    const sanitizedError = this.sanitizeError(error);
+    console.error(logMessage, sanitizedError);
+    
+    // In production, you might want to send this to a remote logging service
+    if (this.isProduction) {
+      this.sendToRemoteLogging(logMessage, sanitizedError);
+    }
+  }
+
+  /**
+   * Logs critical errors that require immediate attention
+   * 
+   * @param {string} message - The critical error message
+   * @param {any} [error] - Optional error object
+   * @param {string} [context] - Optional context (e.g., service name)
+   */
+  critical(message: string, error?: any, context?: string): void {
+    const logMessage = this.formatMessage('CRITICAL', message, context);
+    const sanitizedError = this.sanitizeError(error);
+    console.error(logMessage, sanitizedError);
+    
+    // Always send critical errors to remote logging
+    this.sendToRemoteLogging(logMessage, sanitizedError);
+  }
+
+  /**
+   * Formats a log message with timestamp and context
+   * 
+   * @private
+   * @param {string} level - The log level
+   * @param {string} message - The log message
+   * @param {string} [context] - Optional context
    * @returns {string} Formatted log message
    */
-  private static formatMessage(level: LogLevel, message: string, context?: string): string {
-    const parts: string[] = [];
-    
-    if (LoggingService.config.includeTimestamp) {
-      parts.push(`[${new Date().toISOString()}]`);
-    }
-    
-    if (LoggingService.config.includeLevel) {
-      parts.push(`[${LogLevel[level]}]`);
-    }
-    
-    if (LoggingService.config.includeContext && context) {
-      parts.push(`[${context}]`);
-    }
-    
-    parts.push(message);
-    
-    return parts.join(' ');
+  private formatMessage(level: string, message: string, context?: string): string {
+    const timestamp = new Date().toISOString();
+    const contextStr = context ? ` [${context}]` : '';
+    return `[${timestamp}] ${level}${contextStr}: ${message}`;
   }
-  
+
   /**
-   * Send a log to remote logging service
+   * Sanitizes error objects to prevent sensitive information leakage
    * 
-   * @param {LogLevel} level - Log level
-   * @param {string} message - Log message
-   * @param {string} [context] - Optional context for the log
-   * @param {unknown} [data] - Optional data to include with the log
+   * @private
+   * @param {any} error - The error to sanitize
+   * @returns {any} Sanitized error object
    */
-  private static sendRemoteLog(level: LogLevel, message: string, context?: string, data?: unknown): void {
-    // In a real app, this would send the log to a remote service like Sentry, LogRocket, etc.
-    // For now, we'll just stub this out
-    if (LoggingService.config.enableRemoteLogging) {
-      // Implementation would go here
+  private sanitizeError(error: any): any {
+    if (!error) return error;
+
+    // If it's an Error object, extract safe properties
+    if (error instanceof Error) {
+      return {
+        name: error.name,
+        message: error.message,
+        stack: this.isProduction ? undefined : error.stack,
+        // Don't include any custom properties that might contain sensitive data
+      };
     }
-  }
-  
-  /**
-   * Log a debug message
-   * 
-   * @param {string} message - Log message
-   * @param {string} [context] - Optional context for the log
-   * @param {unknown} [data] - Optional data to include with the log
-   */
-  static debug(message: string, context?: string, data?: unknown): void {
-    if (LoggingService.config.minLevel <= LogLevel.DEBUG) {
-      const formattedMessage = LoggingService.formatMessage(LogLevel.DEBUG, message, context);
-      console.debug(formattedMessage, data || '');
-    }
-  }
-  
-  /**
-   * Log an info message
-   * 
-   * @param {string} message - Log message
-   * @param {string} [context] - Optional context for the log
-   * @param {unknown} [data] - Optional data to include with the log
-   */
-  static info(message: string, context?: string, data?: unknown): void {
-    if (LoggingService.config.minLevel <= LogLevel.INFO) {
-      const formattedMessage = LoggingService.formatMessage(LogLevel.INFO, message, context);
-      console.info(formattedMessage, data || '');
-    }
-  }
-  
-  /**
-   * Log a warning message
-   * 
-   * @param {string} message - Log message
-   * @param {string} [context] - Optional context for the log
-   * @param {unknown} [data] - Optional data to include with the log
-   */
-  static warn(message: string, context?: string, data?: unknown): void {
-    if (LoggingService.config.minLevel <= LogLevel.WARN) {
-      const formattedMessage = LoggingService.formatMessage(LogLevel.WARN, message, context);
-      console.warn(formattedMessage, data || '');
+
+    // If it's a plain object, be very conservative
+    if (typeof error === 'object') {
+      // Only include safe, non-sensitive properties
+      const safeError: any = {};
       
-      // Send to remote logging service
-      LoggingService.sendRemoteLog(LogLevel.WARN, message, context, data);
+      // Common safe properties
+      if (error.code && typeof error.code === 'string') {
+        safeError.code = error.code;
+      }
+      if (error.status && typeof error.status === 'number') {
+        safeError.status = error.status;
+      }
+      if (error.type && typeof error.type === 'string') {
+        safeError.type = error.type;
+      }
+      
+      // In development, include more details
+      if (!this.isProduction) {
+        safeError.originalError = error;
+      }
+      
+      return safeError;
+    }
+
+    // For primitive values, return as-is
+    return error;
+  }
+
+  /**
+   * Sends logs to remote logging service (placeholder for production)
+   * 
+   * @private
+   * @param {string} message - The log message
+   * @param {any} error - The sanitized error
+   */
+  private sendToRemoteLogging(message: string, error: any): void {
+    // TODO: Implement remote logging service integration
+    // Examples: Sentry, LogRocket, Firebase Crashlytics, etc.
+    
+    // For now, just store in memory for potential batch sending
+    // In a real implementation, you'd send this to your logging service
+    try {
+      // This is a placeholder - replace with actual remote logging
+      if (global.__REMOTE_LOGGING_QUEUE__) {
+        global.__REMOTE_LOGGING_QUEUE__.push({
+          timestamp: Date.now(),
+          message,
+          error,
+          level: 'ERROR'
+        });
+      }
+    } catch (loggingError) {
+      // Fallback to console if remote logging fails
+      console.error('Failed to send to remote logging:', loggingError);
     }
   }
-  
+
   /**
-   * Log an error message
+   * Sets the production mode
    * 
-   * @param {string} message - Log message
-   * @param {unknown} [error] - Optional error object
-   * @param {string} [context] - Optional context for the log
+   * @param {boolean} isProduction - Whether the app is in production mode
    */
-  static error(message: string, error?: unknown, context?: string): void {
-    if (LoggingService.config.minLevel <= LogLevel.ERROR) {
-      const formattedMessage = LoggingService.formatMessage(LogLevel.ERROR, message, context);
-      console.error(formattedMessage, error || '');
-      
-      // Send to remote logging service
-      LoggingService.sendRemoteLog(LogLevel.ERROR, message, context, error);
-    }
+  setProductionMode(isProduction: boolean): void {
+    this.isProduction = isProduction;
+  }
+
+  /**
+   * Gets the current production mode
+   * 
+   * @returns {boolean} Whether the app is in production mode
+   */
+  getProductionMode(): boolean {
+    return this.isProduction;
   }
 }
+
+// Initialize global logging queue for production
+if (typeof global !== 'undefined') {
+  global.__REMOTE_LOGGING_QUEUE__ = [];
+}
+
+export default LoggingService.getInstance();

@@ -1,20 +1,31 @@
-import { useRouter } from 'expo-router';
 import * as React from 'react';
-import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { View, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 import { NMCLandingPage } from '../components/NMCLandingPage';
+import { LoginSignupPage } from '../components/LoginSignupPage';
+
+type AppState = 'landing' | 'auth';
 
 export default function App() {
-  const router = useRouter();
+  const [currentPage, setCurrentPage] = React.useState<AppState>('landing');
 
   const handleLogin = () => {
-    // Use push instead of replace for navigation
-    router.push('/(tabs)');
+    setCurrentPage('auth');
+  };
+
+  const handleBackToHome = () => {
+    setCurrentPage('landing');
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#4f46e5" />
-      <NMCLandingPage onLogin={handleLogin} />
+      {currentPage === 'landing' && (
+        <NMCLandingPage onLogin={handleLogin} />
+      )}
+      
+      {currentPage === 'auth' && (
+        <LoginSignupPage onBack={handleBackToHome} />
+      )}
     </SafeAreaView>
   );
 }
@@ -24,4 +35,4 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#4f46e5',
   },
-});
+}); 

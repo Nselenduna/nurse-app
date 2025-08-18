@@ -1,6 +1,7 @@
 import { REVALIDATION_REQUIREMENTS, STORAGE_KEYS } from '../constants';
 import { CpdCategory, CpdLog } from '../types';
 import AuditLogService from './AuditLogService';
+import LoggingService from './LoggingService';
 import StorageService from './StorageService';
 
 /**
@@ -46,7 +47,7 @@ class CpdService {
       this.logs = stored || [];
       this.notifyListeners();
     } catch (error) {
-      console.error('Error loading CPD logs:', error);
+      LoggingService.error('Failed to load CPD logs', error, 'CpdService');
       this.logs = [];
     }
   }
@@ -62,7 +63,7 @@ class CpdService {
     try {
       await StorageService.set(STORAGE_KEYS.cpdLogs, this.logs);
     } catch (error) {
-      console.error('Error saving CPD logs:', error);
+      LoggingService.error('Failed to save CPD logs', error, 'CpdService');
       throw error;
     }
   }
@@ -395,7 +396,7 @@ class CpdService {
       );
       
       // Log the original error for debugging
-      console.error('Error importing CPD data:', error);
+      LoggingService.error('Failed to import CPD data', error, 'CpdService');
       
       // Throw a more user-friendly error
       // This abstracts away the technical details of the failure

@@ -1,10 +1,7 @@
 module.exports = {
   preset: 'jest-expo',
-  transformIgnorePatterns: [
-    'node_modules/(?!(jest-)?react-native|@react-native|react-clone-referenced-element|@react-navigation|expo(nent)?|@expo(nent)?/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|@sentry/.*)'
-  ],
-  setupFilesAfterEnv: ['@testing-library/jest-native/extend-expect'],
-  setupFiles: ['./jest.setup.js'],
+  testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['./jest.setup.js'],
   collectCoverage: true,
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
@@ -12,6 +9,17 @@ module.exports = {
     '!**/coverage/**'
   ],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/$1'
-  }
+    '^@/(.*)$': '<rootDir>/$1',
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+  },
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/android/',
+    '/ios/',
+    '/e2e/'
+  ],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(jest-)?react-native|@react-native|react-clone-referenced-element|@react-navigation|expo(nent)?|@expo(nent)?/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|@sentry/.*)'
+  ],
 };

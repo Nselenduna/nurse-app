@@ -19,6 +19,15 @@
     },
     "production": {
       "autoIncrement": true
+    },
+    "android-simulator": {
+      "developmentClient": true,
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "APP_VARIANT": "production"
+      }
     }
   },
   "submit": {

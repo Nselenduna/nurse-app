@@ -1,236 +1,115 @@
-import { APP_COLORS } from '@/src/constants';
-import { UI_CONFIG } from '@/src/constants/ui';
-import { SettingsItemProps } from '@/src/types/ui';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { memo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { APP_COLORS } from '../../constants';
+import { UI_CONFIG } from '../../constants/ui';
 
-/**
- * A consistent settings item component for use in settings screens
- * 
- * @param {SettingsItemProps} props - Component props
- * @returns {React.ReactElement} Rendered component
- */
-export function SettingsItem({
+interface SettingsItemProps {
+  icon: string;
+  title: string;
+  subtitle: string;
+  onPress: () => void;
+  destructive?: boolean;
+}
+
+export const SettingsItem: React.FC<SettingsItemProps> = memo(({
   icon,
   title,
   subtitle,
   onPress,
-  destructive = false,
-  showChevron = true,
-  accessibilityLabel,
-}: SettingsItemProps) {
-  return (
-    <TouchableOpacity
-      style={styles.container}
-      onPress={onPress}
-      activeOpacity={0.7}
-      accessibilityLabel={accessibilityLabel || title}
-      accessibilityRole="button"
-      accessibilityHint={subtitle}
-    >
-      <View style={styles.content}>
-        {/* Icon container */}
-        <View
-          style={[
-            styles.iconContainer,
-            destructive && styles.destructiveIconContainer,
-          ]}
-        >
-          <Ionicons
-            name={icon}
-            size={UI_CONFIG.iconSize.medium}
-            color={destructive ? APP_COLORS.white : APP_COLORS.info}
-          />
-        </View>
-
-        {/* Text content */}
-        <View style={styles.textContainer}>
-          <Text
-            style={[styles.title, destructive && styles.destructiveTitle]}
-            numberOfLines={1}
-          >
-            {title}
-          </Text>
-          <Text style={styles.subtitle} numberOfLines={2}>
-            {subtitle}
-          </Text>
-        </View>
-
-        {/* Chevron icon */}
-        {showChevron && (
-          <Ionicons
-            name="chevron-forward"
-            size={UI_CONFIG.iconSize.medium}
-            color={APP_COLORS.textMuted}
-            style={styles.chevron}
-          />
-        )}
+  destructive = false
+}) => (
+  <TouchableOpacity
+    style={[
+      styles.settingsItem,
+      destructive && styles.destructiveItem
+    ]}
+    onPress={onPress}
+    activeOpacity={0.8}
+  >
+    <View style={styles.settingsItemLeft}>
+      <View style={[
+        styles.settingsIcon,
+        destructive && styles.destructiveIcon
+      ]}>
+        <Ionicons 
+          name={icon as any} 
+          size={UI_CONFIG.iconSize.medium} 
+          color={destructive ? APP_COLORS.error : APP_COLORS.info} 
+        />
       </View>
-    </TouchableOpacity>
-  );
-}
-
-/**
- * A variant of SettingsItem without an icon
- * 
- * @param {Omit<SettingsItemProps, 'icon'>} props - Component props
- * @returns {React.ReactElement} Rendered component
- */
-export function SimpleSettingsItem({
-  title,
-  subtitle,
-  onPress,
-  destructive = false,
-  showChevron = true,
-  accessibilityLabel,
-}: Omit<SettingsItemProps, 'icon'>) {
-  return (
-    <TouchableOpacity
-      style={styles.container}
-      onPress={onPress}
-      activeOpacity={0.7}
-      accessibilityLabel={accessibilityLabel || title}
-      accessibilityRole="button"
-      accessibilityHint={subtitle}
-    >
-      <View style={styles.content}>
-        {/* Text content */}
-        <View style={styles.textContainerNoIcon}>
-          <Text
-            style={[styles.title, destructive && styles.destructiveTitle]}
-            numberOfLines={1}
-          >
-            {title}
-          </Text>
-          <Text style={styles.subtitle} numberOfLines={2}>
-            {subtitle}
-          </Text>
-        </View>
-
-        {/* Chevron icon */}
-        {showChevron && (
-          <Ionicons
-            name="chevron-forward"
-            size={UI_CONFIG.iconSize.medium}
-            color={APP_COLORS.textMuted}
-            style={styles.chevron}
-          />
-        )}
+      <View style={styles.settingsText}>
+        <Text style={[
+          styles.settingsTitle,
+          destructive && styles.destructiveText
+        ]}>
+          {title}
+        </Text>
+        <Text style={[
+          styles.settingsSubtitle,
+          destructive && styles.destructiveSubtitle
+        ]}>
+          {subtitle}
+        </Text>
       </View>
-    </TouchableOpacity>
-  );
-}
+    </View>
+    <Ionicons 
+      name="chevron-forward" 
+      size={UI_CONFIG.iconSize.small} 
+      color={destructive ? APP_COLORS.error : APP_COLORS.textMuted} 
+    />
+  </TouchableOpacity>
+));
 
-/**
- * A settings item that displays a value instead of a chevron
- * 
- * @param {Omit<SettingsItemProps, 'showChevron'> & { value: string }} props - Component props
- * @returns {React.ReactElement} Rendered component
- */
-export function ValueSettingsItem({
-  icon,
-  title,
-  subtitle,
-  onPress,
-  destructive = false,
-  value,
-  accessibilityLabel,
-}: Omit<SettingsItemProps, 'showChevron'> & { value: string }) {
-  return (
-    <TouchableOpacity
-      style={styles.container}
-      onPress={onPress}
-      activeOpacity={0.7}
-      accessibilityLabel={accessibilityLabel || `${title}: ${value}`}
-      accessibilityRole="button"
-      accessibilityHint={subtitle}
-    >
-      <View style={styles.content}>
-        {/* Icon container */}
-        <View
-          style={[
-            styles.iconContainer,
-            destructive && styles.destructiveIconContainer,
-          ]}
-        >
-          <Ionicons
-            name={icon}
-            size={UI_CONFIG.iconSize.medium}
-            color={destructive ? APP_COLORS.white : APP_COLORS.info}
-          />
-        </View>
-
-        {/* Text content */}
-        <View style={styles.textContainer}>
-          <Text
-            style={[styles.title, destructive && styles.destructiveTitle]}
-            numberOfLines={1}
-          >
-            {title}
-          </Text>
-          <Text style={styles.subtitle} numberOfLines={2}>
-            {subtitle}
-          </Text>
-        </View>
-
-        {/* Value text */}
-        <Text style={styles.value}>{value}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-}
+SettingsItem.displayName = 'SettingsItem';
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: APP_COLORS.background,
-    borderRadius: UI_CONFIG.borderRadius.medium,
-    marginBottom: UI_CONFIG.spacing.small,
-  },
-  content: {
+  settingsItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: APP_COLORS.background,
+    borderRadius: UI_CONFIG.borderRadius.medium,
     padding: UI_CONFIG.spacing.medium,
+    marginBottom: UI_CONFIG.spacing.small,
   },
-  iconContainer: {
+  destructiveItem: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+  },
+  settingsItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  settingsIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: UI_CONFIG.spacing.medium,
+    backgroundColor: 'rgba(6, 182, 212, 0.1)',
   },
-  destructiveIconContainer: {
-    backgroundColor: APP_COLORS.error,
+  destructiveIcon: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
   },
-  textContainer: {
+  settingsText: {
     flex: 1,
-    marginRight: UI_CONFIG.spacing.small,
   },
-  textContainerNoIcon: {
-    flex: 1,
-    marginRight: UI_CONFIG.spacing.small,
-  },
-  title: {
-    color: APP_COLORS.white,
+  settingsTitle: {
     fontSize: UI_CONFIG.fontSize.medium,
     fontWeight: UI_CONFIG.fontWeight.semibold,
-    marginBottom: 2,
+    color: APP_COLORS.white,
   },
-  destructiveTitle: {
+  destructiveText: {
     color: APP_COLORS.error,
   },
-  subtitle: {
+  settingsSubtitle: {
     color: APP_COLORS.textSecondary,
     fontSize: UI_CONFIG.fontSize.small,
+    marginTop: UI_CONFIG.spacing.xsmall / 2,
   },
-  chevron: {
-    marginLeft: UI_CONFIG.spacing.small,
-  },
-  value: {
-    color: APP_COLORS.textSecondary,
-    fontSize: UI_CONFIG.fontSize.medium,
-    marginLeft: UI_CONFIG.spacing.small,
+  destructiveSubtitle: {
+    color: 'rgba(239, 68, 68, 0.8)',
   },
 });

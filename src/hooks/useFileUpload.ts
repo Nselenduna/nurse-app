@@ -142,7 +142,7 @@ export function useFileUpload({
       const fileResult: FileUploadResult = {
         uri: asset.uri,
         name,
-        mimeType: asset.mimeType,
+        mimeType: asset.mimeType || null,
         size: asset.size || 0,
         extension,
       };

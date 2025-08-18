@@ -192,7 +192,7 @@ export async function shareFile(filePath: string, contentType?: string): Promise
 export async function getFileSize(filePath: string): Promise<number> {
   try {
     const fileInfo = await FileSystem.getInfoAsync(filePath);
-    return fileInfo.size || 0;
+    return fileInfo.exists ? (fileInfo as any).size || 0 : 0;
   } catch (error) {
     throw ErrorService.handleFileError(error, 'getSize', filePath);
   }

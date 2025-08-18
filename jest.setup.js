@@ -1,5 +1,3 @@
-import '@testing-library/jest-native/extend-expect';
-
 // Mock AsyncStorage is automatically loaded from __mocks__/@react-native-async-storage/async-storage.js
 jest.mock('@react-native-async-storage/async-storage');
 

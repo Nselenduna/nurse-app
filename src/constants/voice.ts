@@ -7,34 +7,10 @@
  * Time (in ms) to simulate voice recording and processing
  */
 export const VOICE_SIMULATION = {
-  /**
-   * Delay between starting recording and completing transcription
-   */
-  processingDelay: 2000,
-  
-  /**
-   * Alert titles for voice operations
-   */
+  processingDelay: 2000, // 2 seconds to simulate voice processing
   alerts: {
-    /**
-     * Title for successful voice processing
-     */
     successTitle: 'Voice Input',
-    
-    /**
-     * Message for successful voice processing
-     */
     successMessage: 'Voice input processed successfully!',
-    
-    /**
-     * Title for voice processing error
-     */
-    errorTitle: 'Voice Error',
-    
-    /**
-     * Message for voice processing error
-     */
-    errorMessage: 'Failed to process voice input. Please try again.',
   },
 } as const;
 
@@ -48,8 +24,15 @@ export const VOICE_SAMPLES = {
    */
   clinical: [
     "Attended advanced life support training session covering latest resuscitation guidelines",
-    "Participated in clinical skills workshop on wound care and dressing techniques",
-    "Completed online module on medication administration safety protocols"
+    "Participated in clinical audit meeting reviewing patient safety protocols",
+    "Completed online module on infection prevention and control measures",
+    "Mentored junior staff member on clinical documentation standards",
+    "Attended professional development workshop on leadership skills",
+    "Conducted research on patient outcomes in critical care settings",
+    "Led quality improvement initiative for medication safety",
+    "Participated in interprofessional education session on communication skills",
+    "Completed mandatory training on safeguarding vulnerable adults",
+    "Attended conference on evidence-based practice in nursing",
   ],
   
   /**
